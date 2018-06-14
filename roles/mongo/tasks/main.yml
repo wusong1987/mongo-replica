@@ -1,0 +1,4 @@
+---
+- include: mongo-install.yml
+- include: mongo-replset.yml
+...

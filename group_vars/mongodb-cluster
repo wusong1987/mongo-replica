@@ -1,0 +1,8 @@
+mongo_dir: /opt/data
+port: 40000
+node1: 10.168.1.124
+node2: 10.168.1.141
+node3: 10.168.1.142
+replname: rc
+rootpw: gJLi8DOiKSDH
+adminpw: OngyRIO709O

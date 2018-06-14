@@ -1,0 +1,36 @@
+---
+- name: 拷贝mongodb安装包
+  copy: src=/etc/ansible/mongo-replica/roles/mongo/files/mongodb-linux-x86_64-rhel62-3.4.9.tgz dest=/tmp
+
+- name: 创建mongodb安装目录{{ mongo_dir }}
+  file: path={{ mongo_dir }} state=directory mode=0755
+
+- name: 解压mongodb安装包到安装目录{{ mongo_dir }}
+  shell: chdir=/tmp tar -xf mongodb-linux-x86_64-rhel62-3.4.9.tgz -C {{ mongo_dir }}
+
+- name: 修改mongodb安装包名称
+  shell: chdir={{ mongo_dir }} mv mongodb-linux-x86_64-rhel62-3.4.9 mongodb
+
+- name: 拷贝mongodb配置文件
+  template: src=mongodb.conf1.j2 dest={{ mongo_dir }}/mongodb/mongodb.conf
+
+- name: 拷贝mogodb副本集keyfile文件
+  template: src=mongodb-keyfile.j2  dest={{ mongo_dir }}/mongodb/mongodb-keyfile owner=root group=root mode=0600
+
+- name: 创建mongodb数据目录，日志目录及日志文件、进程文件
+  shell: chdir={{ mongo_dir }}/mongodb mkdir -p data/{{ replname }} && touch mongo.log && touch mongo.pid
+
+- name: 拷贝mongod的启动文件到/etc/init.d目录下
+  template: src=mongod.j2 dest=/etc/init.d/mongod mode=0755
+
+- name: 启动mongod并设置开机启动
+  service: name=mongod enabled=yes state=started
+
+- name: 拷贝mongo用户模板文件
+  template: src=mongodb_user.j2 dest={{ mongo_dir }}/mongodb/mongodb_user
+  when: ansible_eth0['ipv4']['address'] == '{{ node1 }}'
+
+- name: 设置管理员root、admin帐号密码
+  shell: chdir={{ mongo_dir }}/mongodb/ ./bin/mongo --host {{ node1 }}  --port  {{ port }} < mongodb_user
+  when: ansible_eth0['ipv4']['address'] == '{{ node1 }}'
+...

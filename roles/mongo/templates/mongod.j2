@@ -1,0 +1,86 @@
+#!/bin/sh  
+# chkconfig: 2345 93 18  
+
+#MogoDB home directory  
+MONGODB_HOME={{ mongo_dir }}/mongodb
+
+#mongodb command  
+MONGODB_BIN=$MONGODB_HOME/bin/mongod
+
+#mongodb config file
+MONGODB_CONF=$MONGODB_HOME/mongodb.conf
+
+#mongodb PID
+MONGODB_PID=$MONGODB_HOME/mongo.pid
+
+#set open file limit
+SYSTEM_MAXFD=65535
+
+MONGODB_NAME="mongodb"
+. /etc/rc.d/init.d/functions
+
+if [ ! -f $MONGODB_BIN ]
+then
+        echo "$MONGODB_NAME startup: $MONGODB_BIN not exists! "  
+        exit
+fi
+
+start(){
+     ulimit -HSn $SYSTEM_MAXFD
+     mongo_num=`ps aux | grep "$MONGODB_NAME" | grep "$MONGODB_CONF" |grep -v grep | wc -l`
+     if [ $mongo_num -eq 0 ];then
+     	$MONGODB_BIN -f $MONGODB_CONF
+     	ret=$?
+     	if [ $ret -eq 0 ]; then
+        	action $"Starting $MONGODB_NAME: " /bin/true
+     	else
+        	action $"Starting $MONGODB_NAME: " /bin/false
+     	fi
+    else 
+		echo "mongod already running"
+    fi
+
+}
+
+stop(){
+        PID=$(ps aux |grep "$MONGODB_NAME" |grep "$MONGODB_CONF" |grep -v grep |wc -l) 
+        if [[ $PID -eq 0  ]];then
+        action $"Stopping $MONGODB_NAME: " /bin/false
+        exit
+        fi
+        kill -HUP `cat $MONGODB_PID`
+        ret=$?
+        if [ $ret -eq 0 ]; then
+                action $"Stopping $MONGODB_NAME: " /bin/true
+                rm -f $MONGODB_PID
+        else   
+                action $"Stopping $MONGODB_NAME: " /bin/false
+        fi
+
+}
+
+restart() {
+        mongo_num=`ps aux | grep "$MONGODB_NAME" | grep "$MONGODB_CONF" |grep -v grep | wc -l`
+	if [ $mongo_num -eq 0 ];then
+		echo "mongod already stoped"
+		start
+	else
+        	stop
+        	sleep 2
+        	start
+	fi
+}
+
+case "$1" in
+        start)
+                start
+                ;;
+        stop)
+                stop
+                ;;
+        restart)
+                restart
+                ;;
+        *)
+                echo $"Usage: $0 {start|stop|restart}"
+esac

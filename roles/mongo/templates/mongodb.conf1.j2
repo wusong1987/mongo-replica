@@ -1,0 +1,11 @@
+port={{ port }}
+dbpath={{ mongo_dir }}/mongodb/data/{{ replname }}
+logpath={{ mongo_dir }}/mongodb/mongo.log 
+pidfilepath={{ mongo_dir }}/mongodb/mongo.pid 
+bind_ip={{ ansible_eth0['ipv4']['address'] }}
+fork=true 
+logappend=true
+smallfiles=true
+#replSet={{ replname }}
+#keyFile={{ mongo_dir }}/mongodb/mongodb-keyfile
+#auth=true

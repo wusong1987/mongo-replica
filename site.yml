@@ -1,0 +1,16 @@
+---
+- hosts: mongodb-cluster
+  remote_user: root
+  roles:
+     - mongo
+
+- hosts: 10.168.1.124
+  remote_user: root
+  tasks:
+  - name: 初始化mongodb replset 
+    shell: chdir={{ mongo_dir }}/mongodb ./bin/mongo --host {{ node1 }} --port {{ port }} -uroot -p  {{ rootpw }} --authenticationDatabase "admin" < mongo_replset
+    register: result
+  - debug: var=result.stdout_lines verbosity=0
+  - name: 删除不需要的模板文件
+    shell: chdir={{ mongo_dir }}/mongodb rm -rf mongodb_user mongo_replset
+... 

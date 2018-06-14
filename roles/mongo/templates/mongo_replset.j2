@@ -1,0 +1,4 @@
+use admin
+config = {_id:'{{ replname }}',members:[{ "_id":1, "host":"{{ node1 }}:{{ port }}" },{ "_id":2, "host":"{{ node2 }}:{{ port }}" },{ "_id":3, "host":"{{ node3 }}:{{ port }}" }] } 
+rs.initiate(config)
+rs.status()

@@ -1,0 +1,26 @@
+---
+- name: 拷贝{{ node2 }}清理数据库语句
+  template: src=db.dropDatabase.j2 dest={{ mongo_dir }}/mongodb/db.dropDatabase
+  when: ansible_eth0['ipv4']['address'] == '{{ node2 }}'
+- name: 清理{{ node2 }}清理数据库
+  shell: chdir={{ mongo_dir }}/mongodb ./bin/mongo --host {{ node2 }} --port {{ port }} < db.dropDatabase
+  when: ansible_eth0['ipv4']['address'] == '{{ node2 }}'
+
+- name: 拷贝{{ node3 }}清理数据库语句
+  template: src=db.dropDatabase.j2 dest={{ mongo_dir }}/mongodb/db.dropDatabase
+  when: ansible_eth0['ipv4']['address'] == '{{ node3 }}'
+- name: 清理{{ node3 }}清理数据库
+  shell: chdir={{ mongo_dir }}/mongodb ./bin/mongo --host {{ node3 }} --port {{ port }} < db.dropDatabase
+  when: ansible_eth0['ipv4']['address'] == '{{ node3 }}'
+
+- name: 重新拷贝mongodb配置文件,实现replset
+  template: src=mongodb.conf2.j2 dest={{ mongo_dir }}/mongodb/mongodb.conf
+  notify: restart mongodb
+
+- name: 拷贝mongodb replset执行语句到master
+  template: src=mongo_replset.j2 dest={{ mongo_dir }}/mongodb/mongo_replset
+  when: ansible_eth0['ipv4']['address'] == '{{ node1 }}'
+...
+
+
+
